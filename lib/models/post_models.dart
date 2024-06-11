@@ -9,7 +9,6 @@ class PostModel {
   final List<String> comments;
   final String description;
   final DateTime uploadedTime;
-  final String? uploadedCity;
 
   PostModel({
     required this.uid,
@@ -22,7 +21,7 @@ class PostModel {
     required this.comments,
     required this.description,
     required this.uploadedTime,
-    this.uploadedCity, // Added uploadedCity field
+    // Added uploadedCity field
   });
 
   Map<String, dynamic> toMap() {
@@ -37,7 +36,6 @@ class PostModel {
       'comments': comments,
       'description': description,
       'uploadedTime': uploadedTime.toIso8601String(),
-      'uploadedCity': uploadedCity, // Added uploadedCity to the map
     };
   }
 
@@ -54,7 +52,7 @@ class PostModel {
       description: map['description'] ?? '',
       uploadedTime: DateTime.parse(
           map['uploadedTime'] ?? DateTime.now().toIso8601String()),
-      uploadedCity: map['uploadedCity'], // Assign uploadedCity from the map
+      // Assign uploadedCity from the map
     );
   }
 }

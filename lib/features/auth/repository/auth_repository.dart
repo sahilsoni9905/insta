@@ -116,7 +116,7 @@ class AuthRepository {
     required String category,
     required File videoFile,
     required BuildContext context,
-    required String? city,
+    
   }) async {
     try {
       String uid = auth.currentUser!.uid;
@@ -140,7 +140,7 @@ class AuthRepository {
           ownerUid: userDetails!.uid,
           postLink: link,
           numberOfLikes: 0,
-          uploadedCity: city,
+          
           comments: [],
           peopleWhoLiked: [],
           description: description,
