@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:task_project/features/home/screens/add_post_screen.dart';
 import 'package:task_project/features/home/screens/feed_screen.dart';
+import 'package:task_project/features/home/screens/user_profile_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -33,11 +34,21 @@ class _HomePageState extends State<HomePage> {
       ),
       body: FeedScreen(),
       bottomNavigationBar: BottomAppBar(
-        child: IconButton(
-          icon: Icon(Icons.add_circle),
-          onPressed: () {
-            Navigator.pushNamed(context, AddPostScreen.routeName);
-          },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              icon: Icon(Icons.add_circle),
+              onPressed: () {
+                Navigator.pushNamed(context, AddPostScreen.routeName);
+              },
+            ),
+            IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, UserProfileScreen.routeName);
+                },
+                icon: Icon(Icons.person))
+          ],
         ),
       ),
     );

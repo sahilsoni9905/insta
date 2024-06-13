@@ -172,8 +172,12 @@ class _PostCardState extends ConsumerState<PostCard> {
                       builder: (context) => Dialog(
                         child: InkWell(
                           child: Container(
-                            height: 30,
-                            child: Text('Post Details'),
+                            height: 50,
+                            child: Text(
+                              'Post Details',
+                              style: TextStyle(fontSize: 20),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                           onTap: () {
                             Navigator.push(

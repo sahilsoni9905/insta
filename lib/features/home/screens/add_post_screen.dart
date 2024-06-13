@@ -21,6 +21,7 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   UserModel? userDetails;
   VideoPlayerController? _videoPlayerController;
+  bool _isLoading = false; // Add this state variable
 
   _selectImage(BuildContext parentContext) async {
     return showDialog(
@@ -75,11 +76,37 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
   }
 
   _uploadPost(BuildContext context, String description, String category) async {
-    ref.read(AuthRepositoryProvider).saveUserPostToFirebase(
-        description: description,
-        category: category,
-        videoFile: _file!,
-        context: context);
+    setState(() {
+      _isLoading = true; // Start loading
+    });
+
+    try {
+      ref.read(AuthRepositoryProvider).saveUserPostToFirebase(
+            description: description,
+            category: category,
+            videoFile: _file!,
+            context: context,
+          );
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const Column(
+              children: [
+                SizedBox(
+                  height: 100,
+                  child: Text(
+                    'Uploading ...',
+                    style: TextStyle(fontSize: 40),
+                  ),
+                )
+              ],
+            );
+          });
+    } finally {
+      setState(() {
+        _isLoading = false; // End loading
+      });
+    }
   }
 
   @override
@@ -114,7 +141,10 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
         : Scaffold(
             appBar: AppBar(
               leading: IconButton(
-                  onPressed: () {}, icon: const Icon(Icons.arrow_back)),
+                  onPressed: () {
+                    Navigator.pop(context); // Navigate back
+                  },
+                  icon: const Icon(Icons.arrow_back)),
               title: const Text('Post to'),
               centerTitle: false,
               actions: [
@@ -128,44 +158,53 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
                     ))
               ],
             ),
-            body: Column(
-              children: <Widget>[
-                const Divider(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            body: Stack(
+              // Use Stack to show loading indicator over the content
+              children: [
+                Column(
                   children: <Widget>[
-                    userDetails != null
-                        ? CircleAvatar(
-                            backgroundImage:
-                                NetworkImage(userDetails!.profilePic),
-                          )
-                        : const CircleAvatar(),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      child: TextField(
-                        controller: _descriptionController,
-                        decoration: const InputDecoration(
-                            hintText: "Write a caption...",
-                            border: InputBorder.none),
-                        maxLines: 8,
-                      ),
+                    const Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        userDetails != null
+                            ? CircleAvatar(
+                                backgroundImage:
+                                    NetworkImage(userDetails!.profilePic),
+                              )
+                            : const CircleAvatar(),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.3,
+                          child: TextField(
+                            controller: _descriptionController,
+                            decoration: const InputDecoration(
+                                hintText: "Write a caption...",
+                                border: InputBorder.none),
+                            maxLines: 8,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 45.0,
+                          width: 45.0,
+                          child: _videoPlayerController != null &&
+                                  _videoPlayerController!.value.isInitialized
+                              ? AspectRatio(
+                                  aspectRatio:
+                                      _videoPlayerController!.value.aspectRatio,
+                                  child: VideoPlayer(_videoPlayerController!),
+                                )
+                              : Container(),
+                        ),
+                      ],
                     ),
-                    SizedBox(
-                      height: 45.0,
-                      width: 45.0,
-                      child: _videoPlayerController != null &&
-                              _videoPlayerController!.value.isInitialized
-                          ? AspectRatio(
-                              aspectRatio:
-                                  _videoPlayerController!.value.aspectRatio,
-                              child: VideoPlayer(_videoPlayerController!),
-                            )
-                          : Container(),
-                    ),
+                    const Divider(),
                   ],
                 ),
-                const Divider(),
+                if (_isLoading) // Show loading indicator when loading
+                  Center(
+                    child: CircularProgressIndicator(),
+                  ),
               ],
             ),
           );

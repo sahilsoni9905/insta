@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:task_project/features/auth/screens/optScreen.dart';
 import 'package:task_project/features/auth/screens/user_info_screen.dart';
 import 'package:task_project/features/home/screens/add_post_screen.dart';
+import 'package:task_project/features/home/screens/user_profile_screen.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
@@ -16,6 +17,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(builder: (context) => UserInfoScreen());
     case AddPostScreen.routeName:
       return MaterialPageRoute(builder: (context) => AddPostScreen());
+      case UserProfileScreen.routeName:
+      return MaterialPageRoute(builder: (context) => UserProfileScreen());
     default:
       return MaterialPageRoute(
         builder: (context) => Scaffold(

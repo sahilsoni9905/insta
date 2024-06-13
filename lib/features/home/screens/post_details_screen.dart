@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:video_player/video_player.dart';
 
 class PostDetailsScreen extends StatefulWidget {
@@ -30,6 +31,13 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  String formatDateTime(String uploadedTime) {
+    // Assuming uploadedTime is a string representation of a timestamp
+    final dateTime = DateTime.parse(uploadedTime);
+    final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
+    return formattedDate;
   }
 
   @override
@@ -85,7 +93,7 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        'Posted on: ${widget.postDetails['uploadedTime']}',
+                        'Posted on: ${formatDateTime(widget.postDetails['uploadedTime'])}',
                         style: TextStyle(fontSize: 14),
                       ),
                       Text(
