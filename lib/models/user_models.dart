@@ -1,13 +1,16 @@
+import 'package:task_project/models/follow_models.dart';
 import 'package:task_project/models/post_models.dart';
 
 class UserModel {
   final String name;
   final String uid;
   final String profilePic;
-  final List postLiked;
-  final List postCommented;
+  final List<String> postLiked;
+  final List<String> postCommented;
   final String phoneNumber;
   final List<PostModel> postUploaded;
+  final List<FollowModel> followers;
+  final List<FollowModel> following;
 
   UserModel({
     required this.name,
@@ -17,6 +20,8 @@ class UserModel {
     required this.postCommented,
     required this.phoneNumber,
     required this.postUploaded,
+    required this.followers,
+    required this.following,
   });
 
   Map<String, dynamic> toMap() {
@@ -28,6 +33,8 @@ class UserModel {
       'postCommented': postCommented,
       'phoneNumber': phoneNumber,
       'postUploaded': postUploaded.map((post) => post.toMap()).toList(),
+      'followers': followers.map((user) => user.toMap()).toList(),
+      'following': following.map((user) => user.toMap()).toList(),
     };
   }
 
@@ -36,11 +43,15 @@ class UserModel {
       name: map['name'] ?? '',
       uid: map['uid'] ?? '',
       profilePic: map['profilePic'] ?? '',
-      postLiked: map['postLiked'] ?? [],
-      postCommented: map['postCommented'] ?? [],
+      postLiked: List<String>.from(map['postLiked'] ?? []),
+      postCommented: List<String>.from(map['postCommented'] ?? []),
       phoneNumber: map['phoneNumber'] ?? '',
       postUploaded: List<PostModel>.from(
           map['postUploaded']?.map((post) => PostModel.fromMap(post)) ?? []),
+      followers: List<FollowModel>.from(
+          map['followers']?.map((user) => FollowModel.fromMap(user)) ?? []),
+      following: List<FollowModel>.from(
+          map['following']?.map((user) => FollowModel.fromMap(user)) ?? []),
     );
   }
 }

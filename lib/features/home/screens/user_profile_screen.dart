@@ -2,14 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:task_project/features/home/repository/feed_repository.dart';
+import 'package:task_project/features/home/screens/another_user_profile_screen.dart';
 import 'package:task_project/features/home/widgets/video_playback.dart';
+import 'package:task_project/models/follow_models.dart';
 import 'package:task_project/models/user_models.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   static const routeName = 'user-profile-screen';
-  const UserProfileScreen({super.key});
+
+  const UserProfileScreen({Key? key}) : super(key: key);
 
   @override
   ConsumerState<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -27,6 +30,65 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   Future<void> _loadUserData() async {
     user = await ref.read(FeedRepositoryProvider).getCurrentUserData();
     setState(() {});
+  }
+
+  Future<void> showFollowingFollowersDialog(
+      BuildContext context, List<FollowModel> peoples, String txt) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        print('${peoples.length} sahil sahil sahil sahil');
+        return Dialog(
+          child: Container(
+            height: 400,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    txt,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: peoples.length,
+                    itemBuilder: (context, index) {
+                      print(peoples[index].profilePic);
+                      return ListTile(
+                        leading: InkWell(
+                          onTap: () {
+                            Navigator.pushNamed(
+                                context, AnotherUserProfileScreen.routeName,
+                                arguments: peoples[index].uid);
+                          },
+                          child: CircleAvatar(
+                            radius: 15,
+                            backgroundImage: NetworkImage(
+                              peoples[index].profilePic.toString(),
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          peoples[index].name,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Close'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -77,9 +139,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       ),
                       CircleAvatar(
                         radius: 50,
-                        backgroundImage: NetworkImage(user!.profilePic) ??
-                            NetworkImage(
-                                'https://media.istockphoto.com/id/953079238/photo/smiling-man-with-hat-and-sunglasses.jpg?s=1024x1024&w=is&k=20&c=pQQYoyt5ytYtFRhbdVKRqqIfTDEJt6FJ_r-VJ5_fmkU='),
+                        backgroundImage: NetworkImage(user!.profilePic ??
+                            'https://media.istockphoto.com/id/953079238/photo/smiling-man-with-hat-and-sunglasses.jpg?s=1024x1024&w=is&k=20&c=pQQYoyt5ytYtFRhbdVKRqqIfTDEJt6FJ_r-VJ5_fmkU='),
                       ),
                       const SizedBox(
                         height: 10,
@@ -97,39 +158,90 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         style:
                             const TextStyle(fontSize: 16, color: Colors.grey),
                       ),
-                      SizedBox(
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              List<FollowModel> temp = user!.followers;
+                              showFollowingFollowersDialog(
+                                  context, temp, 'Followers');
+                            },
+                            child: Column(
+                              children: [
+                                Text(
+                                  user!.followers.length.toString(),
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  'Followers',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          TextButton(
+                            onPressed: () {
+                              List<FollowModel> temp = user!.following;
+
+                              showFollowingFollowersDialog(
+                                  context, temp, 'Following');
+                            },
+                            child: Column(
+                              children: [
+                                Text(
+                                  user!.following.length.toString(),
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  'Following',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
                         height: 20,
                       ),
                       GridView.builder(
-                          padding: EdgeInsets.all(10),
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                          ),
-                          itemCount: user!.postUploaded.length,
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => VideoPlayerScreen(
-                                        videoUrl: user!
-                                            .postUploaded[index].postLink
-                                            .toString(),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                //here add a controller whose link will be that in videoUrl
-                                child: VideoPlayerCard(
+                        padding: EdgeInsets.all(10),
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                        ),
+                        itemCount: user!.postUploaded.length,
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => VideoPlayerScreen(
                                     videoUrl:
-                                        user!.postUploaded[index].postLink));
-                          }),
+                                        user!.postUploaded[index].postLink,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: VideoPlayerCard(
+                              videoUrl: user!.postUploaded[index].postLink,
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),

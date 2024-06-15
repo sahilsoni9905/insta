@@ -89,13 +89,16 @@ class AuthRepository {
       }
 
       var user = UserModel(
-          name: name,
-          uid: uid,
-          profilePic: photoUrl,
-          postCommented: [],
-          postLiked: [],
-          phoneNumber: auth.currentUser!.phoneNumber!,
-          postUploaded: []);
+        name: name,
+        uid: uid,
+        profilePic: photoUrl,
+        postCommented: [],
+        postLiked: [],
+        phoneNumber: auth.currentUser!.phoneNumber!,
+        postUploaded: [],
+        followers: [],
+        following: [],
+      );
       userDetails = user;
       await firestore.collection('users').doc(uid).set(user.toMap());
 
@@ -116,7 +119,6 @@ class AuthRepository {
     required String category,
     required File videoFile,
     required BuildContext context,
-    
   }) async {
     try {
       String uid = auth.currentUser!.uid;
@@ -140,7 +142,6 @@ class AuthRepository {
           ownerUid: userDetails!.uid,
           postLink: link,
           numberOfLikes: 0,
-          
           comments: [],
           peopleWhoLiked: [],
           description: description,
@@ -167,6 +168,8 @@ class AuthRepository {
       showSnackBar(context: context, content: e.toString());
     }
   }
+
+ 
 
   Stream<UserModel> userData(String userId) {
     return firestore.collection('users').doc(userId).snapshots().map(

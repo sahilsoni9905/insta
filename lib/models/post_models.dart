@@ -1,3 +1,5 @@
+import 'package:task_project/models/comment_models.dart';
+
 class PostModel {
   final String uid;
   final String ownerUid;
@@ -6,7 +8,7 @@ class PostModel {
   final String postLink;
   final int numberOfLikes;
   final List<String> peopleWhoLiked;
-  final List<String> comments;
+  final List<CommentModel> comments;
   final String description;
   final DateTime uploadedTime;
 
@@ -21,7 +23,6 @@ class PostModel {
     required this.comments,
     required this.description,
     required this.uploadedTime,
-    // Added uploadedCity field
   });
 
   Map<String, dynamic> toMap() {
@@ -33,7 +34,7 @@ class PostModel {
       'postLink': postLink,
       'numberOfLikes': numberOfLikes,
       'peopleWhoLiked': peopleWhoLiked,
-      'comments': comments,
+      'comments': comments.map((comment) => comment.toMap()).toList(),
       'description': description,
       'uploadedTime': uploadedTime.toIso8601String(),
     };
@@ -48,11 +49,11 @@ class PostModel {
       postLink: map['postLink'] ?? '',
       numberOfLikes: map['numberOfLikes'] ?? 0,
       peopleWhoLiked: List<String>.from(map['peopleWhoLiked'] ?? []),
-      comments: List<String>.from(map['comments'] ?? []),
+      comments: List<CommentModel>.from(
+          map['comments']?.map((x) => CommentModel.fromMap(x)) ?? []),
       description: map['description'] ?? '',
       uploadedTime: DateTime.parse(
           map['uploadedTime'] ?? DateTime.now().toIso8601String()),
-      // Assign uploadedCity from the map
     );
   }
 }

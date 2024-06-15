@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:task_project/features/home/screens/another_user_profile_screen.dart';
+import 'package:task_project/models/comment_models.dart';
+import 'package:task_project/models/follow_models.dart';
 import 'package:task_project/models/post_models.dart';
 import 'package:task_project/models/user_models.dart';
 
@@ -54,6 +57,18 @@ class FeedRepository {
     return false;
   }
 
+  Future<bool> isFollowing(String anotherUserUid) async {
+    UserModel? user = await getCurrentUserData();
+    if (user != null) {
+      for (var follow in user.following) {
+        if (follow.uid == anotherUserUid) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   Future<UserModel?> getCurrentUserData() async {
     var currentUser = auth.currentUser;
     if (currentUser != null) {
@@ -70,12 +85,69 @@ class FeedRepository {
     return null;
   }
 
+  Future<UserModel?> getAnotherUserData(String uid) async {
+    var userData = await firestore.collection('users').doc(uid).get();
+    if (userData.exists) {
+      return UserModel.fromMap(userData.data()!);
+    } else {
+      print('Error: User data not found.');
+    }
+    return null;
+  }
+
   Future<void> addComment(String postUid, String comment) async {
     UserModel? user = await getCurrentUserData();
     if (user != null) {
       var postDoc = firestore.collection('allReels').doc(postUid);
+      var newComment = CommentModel(
+          userUid: user.uid,
+          name: user.name,
+          profilePic: user.profilePic,
+          comment: comment);
       await postDoc.update({
-        'comments': FieldValue.arrayUnion([comment]),
+        'comments': FieldValue.arrayUnion([newComment.toMap()]),
+      });
+    }
+  }
+
+  Future<void> addFollowing(String anotherUid) async {
+    UserModel? user = await getCurrentUserData();
+    UserModel? anotherUser = await getAnotherUserData(anotherUid);
+    if (user != null && anotherUser != null) {
+      var ownerDoc = firestore.collection('users').doc(user.uid);
+      var newFollowing = FollowModel(
+          uid: anotherUser.uid,
+          name: anotherUser.name,
+          profilePic: anotherUser.profilePic);
+      await ownerDoc.update({
+        'following': FieldValue.arrayUnion([newFollowing.toMap()])
+      });
+      var otherDoc = firestore.collection('users').doc(anotherUser.uid);
+      var newFollowers = FollowModel(
+          uid: user.uid, name: user.name, profilePic: user.profilePic);
+      await otherDoc.update({
+        'followers': FieldValue.arrayUnion([newFollowers.toMap()])
+      });
+    }
+  }
+
+  Future<void> removeFollowing(String anotherUid) async {
+    UserModel? user = await getCurrentUserData();
+    UserModel? anotherUser = await getAnotherUserData(anotherUid);
+    if (user != null && anotherUser != null) {
+      var ownerDoc = firestore.collection('users').doc(user.uid);
+      var newFollowing = FollowModel(
+          uid: anotherUser.uid,
+          name: anotherUser.name,
+          profilePic: anotherUser.profilePic);
+      await ownerDoc.update({
+        'following': FieldValue.arrayRemove([newFollowing.toMap()])
+      });
+      var otherDoc = firestore.collection('users').doc(anotherUser.uid);
+      var newFollowers = FollowModel(
+          uid: user.uid, name: user.name, profilePic: user.profilePic);
+      await otherDoc.update({
+        'followers': FieldValue.arrayRemove([newFollowers.toMap()])
       });
     }
   }

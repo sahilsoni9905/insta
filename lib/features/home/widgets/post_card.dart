@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:task_project/features/home/repository/feed_repository.dart';
+import 'package:task_project/features/home/screens/another_user_profile_screen.dart';
 import 'package:task_project/features/home/screens/post_details_screen.dart';
+import 'package:task_project/models/comment_models.dart';
 import 'package:video_player/video_player.dart';
 
 class PostCard extends ConsumerStatefulWidget {
@@ -17,47 +19,7 @@ class PostCard extends ConsumerStatefulWidget {
 class _PostCardState extends ConsumerState<PostCard> {
   bool isLikedThePost = false;
   late VideoPlayerController _controller;
-  TextEditingController _commentController = TextEditingController();
-
-  void showCommentInputDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: _commentController,
-                  decoration: InputDecoration(
-                    hintText: 'Write a comment...',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () async {
-                    // Add the comment to the post
-                    if (_commentController.text.isNotEmpty) {
-                      await ref.read(FeedRepositoryProvider).addComment(
-                            widget.snap['uid'],
-                            _commentController.text,
-                          );
-                      _commentController.clear();
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: Text('Submit'),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
@@ -77,7 +39,7 @@ class _PostCardState extends ConsumerState<PostCard> {
     setState(() {});
   }
 
-  void likeUpdate() async {
+  void _likeUpdate() async {
     await ref
         .read(FeedRepositoryProvider)
         .likeUpdate(widget.snap['uid'], isLikedThePost);
@@ -86,7 +48,46 @@ class _PostCardState extends ConsumerState<PostCard> {
     });
   }
 
-  void showCommentsDialog(BuildContext context, List<dynamic> comments) {
+  void _showCommentInputDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _commentController,
+                  decoration: InputDecoration(
+                    hintText: 'Write a comment...',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (_commentController.text.isNotEmpty) {
+                      await ref.read(FeedRepositoryProvider).addComment(
+                            widget.snap['uid'],
+                            _commentController.text,
+                          );
+                      _commentController.clear();
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text('Submit'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCommentsDialog(BuildContext context, List<CommentModel> comments) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -107,7 +108,25 @@ class _PostCardState extends ConsumerState<PostCard> {
                     itemCount: comments.length,
                     itemBuilder: (context, index) {
                       return ListTile(
-                        title: Text(comments[index].toString()),
+                        leading: InkWell(
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AnotherUserProfileScreen.routeName,
+                              arguments: widget.snap['ownerUid'],
+                            );
+                          },
+                          child: CircleAvatar(
+                            radius: 15,
+                            backgroundImage: NetworkImage(
+                                comments[index].profilePic.toString()),
+                          ),
+                        ),
+                        title: Text(
+                          comments[index].name.toString(),
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(comments[index].comment.toString()),
                       );
                     },
                   ),
@@ -139,6 +158,7 @@ class _PostCardState extends ConsumerState<PostCard> {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
         children: [
+          // Header Section
           Container(
             padding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
             child: Row(
@@ -154,12 +174,20 @@ class _PostCardState extends ConsumerState<PostCard> {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8),
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.snap['ownerUserName'] ?? 'Unknown User',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        InkWell(
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AnotherUserProfileScreen.routeName,
+                              arguments: widget.snap['ownerUid'],
+                            );
+                          },
+                          child: Text(
+                            widget.snap['ownerUserName'] ?? 'Unknown User',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),
@@ -171,14 +199,6 @@ class _PostCardState extends ConsumerState<PostCard> {
                       context: context,
                       builder: (context) => Dialog(
                         child: InkWell(
-                          child: Container(
-                            height: 50,
-                            child: Text(
-                              'Post Details',
-                              style: TextStyle(fontSize: 20),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
                           onTap: () {
                             Navigator.push(
                               context,
@@ -188,6 +208,14 @@ class _PostCardState extends ConsumerState<PostCard> {
                               ),
                             );
                           },
+                          child: Container(
+                            height: 50,
+                            alignment: Alignment.center,
+                            child: Text(
+                              'Post Details',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ),
                         ),
                       ),
                     );
@@ -197,6 +225,7 @@ class _PostCardState extends ConsumerState<PostCard> {
               ],
             ),
           ),
+          // Video Section
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.35,
             width: double.infinity,
@@ -207,35 +236,30 @@ class _PostCardState extends ConsumerState<PostCard> {
                   )
                 : Center(child: CircularProgressIndicator()),
           ),
+          // Actions Section
           Row(
             children: [
               IconButton(
-                onPressed: likeUpdate,
+                onPressed: _likeUpdate,
                 icon: Icon(
                   Icons.favorite,
-                  color: isLikedThePost
-                      ? Colors.red
-                      : Color.fromARGB(255, 155, 150, 150),
+                  color: isLikedThePost ? Colors.red : Colors.grey,
                 ),
               ),
               IconButton(
                 onPressed: () {
-                  showCommentInputDialog(context);
+                  _showCommentInputDialog(context);
                 },
                 icon: Icon(Icons.comment_outlined, color: Colors.red),
               ),
             ],
           ),
+          // Likes Section
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(widget.snap['numberOfLikes'].toString() ?? 'Error'),
-              ],
-            ),
+            child: Text('${widget.snap['numberOfLikes'] ?? '0'} Likes'),
           ),
+          // Description Section
           Container(
             padding: const EdgeInsets.all(10),
             child: RichText(
@@ -245,9 +269,16 @@ class _PostCardState extends ConsumerState<PostCard> {
               ),
             ),
           ),
+          // View Comments Section
           InkWell(
-            onTap: () => showCommentsDialog(context, widget.snap['comments']),
-            child: Text('view all comments'),
+            onTap: () {
+              List<dynamic> commentsDynamic = widget.snap['comments'];
+              List<CommentModel> comments = commentsDynamic
+                  .map((comment) => CommentModel.fromMap(comment))
+                  .toList();
+              _showCommentsDialog(context, comments);
+            },
+            child: Text('View all comments'),
           ),
         ],
       ),

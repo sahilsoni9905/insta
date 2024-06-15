@@ -9,7 +9,11 @@ class FeedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('allReels').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('allReels')
+            .orderBy('uploadedTime',
+                descending: true) 
+            .snapshots(),
         builder: (context,
             AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
