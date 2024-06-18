@@ -11,8 +11,7 @@ class FeedScreen extends StatelessWidget {
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('allReels')
-            .orderBy('uploadedTime',
-                descending: true) 
+            .orderBy('uploadedTime', descending: true)
             .snapshots(),
         builder: (context,
             AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
@@ -38,7 +37,14 @@ class FeedScreen extends StatelessWidget {
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               var postData = snapshot.data!.docs[index].data();
-              return PostCard(snap: postData);
+              return Column(
+                children: [
+                  PostCard(snap: postData),
+                  const SizedBox(
+                    height: 40,
+                  )
+                ],
+              );
             },
           );
         },

@@ -14,7 +14,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(const ProviderScope(
-      child: MyApp())); // Ensure ProviderScope is used correctly
+      child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
